@@ -1,0 +1,33 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1000' width='800' height='1000'>
+  <defs>
+    <linearGradient id='snakeGrad' x1='0%' y1='0%' x2='0%' y2='100%'>
+      <stop offset='0%' stopColor='#F93B3B' />
+      <stop offset='30%' stopColor='#C026D3' />
+      <stop offset='65%' stopColor='#7C3AED' />
+      <stop offset='100%' stopColor='#0284C7' />
+    </linearGradient>
+    <filter id='discShadow' x='-20%' y='-20%' width='150%' height='150%'>
+      <feDropShadow dx='0' dy='6' stdDeviation='8' flood-color='#000000' flood-opacity='0.18' />
+    </filter>
+  </defs>
+  
+  <!-- Bridges between nodes -->
+  <!-- Bridge 1: (530, 150) to (270, 390) -->
+  <path d='M 530 150 C 470 210 330 330 270 390' stroke='url(#snakeGrad)' stroke-width='144' stroke-linecap='round' />
+  <!-- Bridge 2: (270, 390) to (530, 630) -->
+  <path d='M 270 390 C 330 450 470 570 530 630' stroke='url(#snakeGrad)' stroke-width='144' stroke-linecap='round' />
+  <!-- Bridge 3: (530, 630) to (270, 870) -->
+  <path d='M 530 630 C 470 690 330 810 270 870' stroke='url(#snakeGrad)' stroke-width='144' stroke-linecap='round' />
+  
+  <!-- Outer Node Circles -->
+  <circle cx='530' cy='150' r='88' fill='url(#snakeGrad)' />
+  <circle cx='270' cy='390' r='88' fill='url(#snakeGrad)' />
+  <circle cx='530' cy='630' r='88' fill='url(#snakeGrad)' />
+  <circle cx='270' cy='870' r='88' fill='url(#snakeGrad)' />
+  
+  <!-- White Inner Discs with Drop Shadow -->
+  <circle cx='530' cy='150' r='68' fill='#FFFFFF' filter='url(#discShadow)' />
+  <circle cx='270' cy='390' r='68' fill='#FFFFFF' filter='url(#discShadow)' />
+  <circle cx='530' cy='630' r='68' fill='#FFFFFF' filter='url(#discShadow)' />
+  <circle cx='270' cy='870' r='68' fill='#FFFFFF' filter='url(#discShadow)' />
+</svg>
