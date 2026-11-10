@@ -16,7 +16,7 @@ export interface VideoItem {
   duration: string;
   views: string;
   videoUrl: string;
-  poster: string;
+  previewTime?: number;
   description: string;
   service: string;
   tags: string[];
@@ -30,81 +30,158 @@ export const VideosSection: React.FC<VideosSectionProps> = ({ onOpenEnquiry }) =
   const [activeModalVideo, setActiveModalVideo] = useState<VideoItem | null>(null);
   const [mobileVideoIndex, setMobileVideoIndex] = useState<number>(0);
   const [isMobilePaused, setIsMobilePaused] = useState<boolean>(false);
+  const [isDesktopPaused, setIsDesktopPaused] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [hasOverflow, setHasOverflow] = useState(true);
 
   const videoList: VideoItem[] = [
     {
       id: 'video-1',
-      title: 'Enterprise ERP & Multi-Branch Cloud Architecture',
-      category: 'ERP & Cloud',
-      duration: '0:45',
-      views: '5.2k',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-software-developer-working-on-code-41365-large.mp4',
-      poster: '/projects/project-sk-catering.png',
-      description: 'A behind-the-scenes walkthrough of automated kitchen order routing, real-time GST invoicing, and inventory sync.',
-      service: 'ERP',
-      tags: ['ERP Architecture', 'PostgreSQL', 'High Concurrency']
+      title: 'Why Retail & Saree Brands Need Their Own Website',
+      category: 'E-Commerce',
+      duration: '0:43',
+      views: '4.6k',
+      videoUrl: '/videos/v1.mp4',
+      previewTime: 0.8,
+      description: '3 essentials that set leading dress and saree stores apart: a dedicated brand website, transparent price & size details, and category-wise shopping.',
+      service: 'Website Development',
+      tags: ['Saree Store', 'Online Ordering', 'Brand Website']
     },
     {
       id: 'video-2',
-      title: 'Real-Time Logistics Fleet Tracking & Geofencing',
-      category: 'Web Platforms',
-      duration: '0:38',
-      views: '4.8k',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-dashboard-analytics-animation-43098-large.mp4',
-      poster: '/projects/project-oneroute-india.png',
-      description: 'Interactive GPS telemetry streaming live vehicle coordinates with sub-second latencies and driver dispatch.',
+      title: '24/7 Automated Online Store & Order Tracking',
+      category: 'Web Stores',
+      duration: '0:22',
+      views: '3.8k',
+      videoUrl: '/videos/v2.mp4',
+      previewTime: 1,
+      description: 'Turn product browsers into automated 24/7 orders with upfront pricing, seamless ordering, and real-time delivery tracking.',
       service: 'Web Application',
-      tags: ['Fleet Tracking', 'WebSockets', 'Telemetry']
+      tags: ['24/7 Orders', 'E-Commerce', 'Delivery Tracking']
     },
     {
       id: 'video-3',
-      title: 'Cross-Platform React Native LMS Mobile Experience',
-      category: 'Mobile Apps',
-      duration: '0:52',
-      views: '7.1k',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-smartphone-with-green-screen-43285-large.mp4',
-      poster: '/projects/project-master-mind.png',
-      description: 'Native mobile exam engine handling 5,000+ simultaneous test takers with offline course caching.',
-      service: 'Mobile Application',
-      tags: ['React Native', 'Offline First', 'Mobile UI']
+      title: 'Interactive Saree Catalogue & Instant Enquiry Website',
+      category: 'Retail UI',
+      duration: '0:28',
+      views: '5.4k',
+      videoUrl: '/videos/v3.mp4',
+      previewTime: 0.8,
+      description: 'Replace endless Instagram feed scrolling and WhatsApp DMs with categorized silk, cotton & designer saree collections and one-tap enquiry.',
+      service: 'Website Development',
+      tags: ['Catalogue UI', 'Product Gallery', 'Instant Enquiry']
     },
     {
       id: 'video-4',
-      title: 'Modern High-Velocity SaaS Platform & Auth0 Security',
-      category: 'SaaS Platforms',
-      duration: '0:42',
-      views: '3.9k',
-      videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-man-working-on-his-laptop-in-an-office-42634-large.mp4',
-      poster: '/projects/project-sri-sai.png',
-      description: 'Production-ready SaaS boilerplate with role-based access control, billing webhooks, and telemetry dashboards.',
-      service: 'SaaS Application',
-      tags: ['SaaS Engine', 'Next.js 15', 'Stripe Billing']
+      title: 'High-Converting Customized E-Commerce UX',
+      category: 'Conversion UX',
+      duration: '0:47',
+      views: '6.1k',
+      videoUrl: '/videos/v4.mp4',
+      previewTime: 1,
+      description: 'Stop losing customers to slow or confusing pages. See how we craft fast, trustworthy product discovery-to-checkout experiences.',
+      service: 'Web Application',
+      tags: ['Custom E-Commerce', 'Fast Checkout', 'UI/UX']
+    },
+    {
+      id: 'video-5',
+      title: 'Firecracker Shop Catalogue & Systematic Enquiry Portal',
+      category: 'Retail Portal',
+      duration: '0:47',
+      views: '4.9k',
+      videoUrl: '/videos/v5.mp4',
+      previewTime: 1,
+      description: 'Move from scattered WhatsApp price lists and DM follow-ups to an organized cracker business website with structured incoming enquiries.',
+      service: 'Website Development',
+      tags: ['Crackers Store', 'Lead Management', 'Business Site']
+    },
+    {
+      id: 'video-6',
+      title: 'Photography Portfolio & Client Booking Platform',
+      category: 'Portfolio & Booking',
+      duration: '0:47',
+      views: '5.7k',
+      videoUrl: '/videos/v6.mp4',
+      previewTime: 1,
+      description: 'Showcase Wedding, Pre-Wedding, and Event shoots in a categorized portfolio website designed for effortless client enquiries.',
+      service: 'Website Development',
+      tags: ['Photo Portfolio', 'Client Booking', 'Creative Studio']
     }
   ];
 
   const checkScrollState = () => {
     if (!scrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 10);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    const { scrollWidth, clientWidth } = scrollRef.current;
+    setHasOverflow(scrollWidth - clientWidth > 4);
+  };
+
+  useEffect(() => {
+    checkScrollState();
+    const timer = setTimeout(checkScrollState, 150);
+    const handleResize = () => checkScrollState();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const getStepWidth = (el: HTMLDivElement) => {
+    const firstCard = el.firstElementChild as HTMLElement | null;
+    if (!firstCard) return 314;
+    const styles = window.getComputedStyle(el);
+    const gap = parseFloat(styles.columnGap || styles.gap || '24') || 24;
+    return firstCard.getBoundingClientRect().width + gap;
   };
 
   const scroll = (direction: 'left' | 'right') => {
-    if (!scrollRef.current) return;
-    const amount = direction === 'left' ? -340 : 340;
-    scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+    const el = scrollRef.current;
+    if (!el) return;
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    if (maxScroll <= 4) return;
+    const step = getStepWidth(el);
+
+    if (direction === 'right') {
+      if (el.scrollLeft >= maxScroll - 32) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollTo({ left: Math.min(el.scrollLeft + step, maxScroll), behavior: 'smooth' });
+      }
+    } else {
+      if (el.scrollLeft <= 16) {
+        el.scrollTo({ left: maxScroll, behavior: 'smooth' });
+      } else {
+        el.scrollTo({ left: Math.max(el.scrollLeft - step, 0), behavior: 'smooth' });
+      }
+    }
     setTimeout(checkScrollState, 350);
   };
 
-  // Auto-slide every 3 seconds on mobile view
+  // Auto-slide every 2 seconds on desktop view
+  useEffect(() => {
+    if (isDesktopPaused || activeModalVideo) return;
+    const timer = setInterval(() => {
+      const el = scrollRef.current;
+      if (!el || el.clientWidth === 0) return;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      if (maxScroll <= 4) return;
+      const step = getStepWidth(el);
+
+      if (el.scrollLeft >= maxScroll - 32) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollTo({ left: Math.min(el.scrollLeft + step, maxScroll), behavior: 'smooth' });
+      }
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [isDesktopPaused, activeModalVideo]);
+
+  // Auto-slide every 2 seconds on mobile view
   useEffect(() => {
     if (isMobilePaused || activeModalVideo) return;
     const timer = setInterval(() => {
       setMobileVideoIndex((prev) => (prev + 1) % videoList.length);
-    }, 3000);
+    }, 2000);
     return () => clearInterval(timer);
   }, [isMobilePaused, activeModalVideo, videoList.length]);
 
@@ -151,7 +228,7 @@ export const VideosSection: React.FC<VideosSectionProps> = ({ onOpenEnquiry }) =
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 gap-6">
+        <div className="mb-8 sm:mb-12">
           <div className="max-w-2xl">
             <span className="text-[11px] font-black uppercase tracking-widest text-[#6842C2] bg-[#EEE8FA] px-3.5 py-1 rounded-full mb-3 inline-block border border-purple-100">
               FEATURED VIDEO SHOWCASE
@@ -163,28 +240,8 @@ export const VideosSection: React.FC<VideosSectionProps> = ({ onOpenEnquiry }) =
               </span>
             </h2>
             <p className="text-slate-500 text-sm leading-relaxed max-w-xl font-normal">
-              Explore architectural walkthroughs, live mobile interactions, and production dashboards engineered for our enterprise partners. Click any video to play.
+              Watch how Uyar Technologies helps retail boutiques, cracker stores, photographers, and growing businesses turn visitors into enquiries. Click any video to play.
             </p>
-          </div>
-
-          {/* Navigation Controls on Desktop */}
-          <div className="hidden md:flex items-center gap-3">
-            <button
-              onClick={() => scroll('left')}
-              disabled={!canScrollLeft}
-              className="w-11 h-11 rounded-full bg-white border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-50 hover:border-purple-200 hover:text-[#6842C2] flex items-center justify-center transition-all shadow-xs cursor-pointer"
-              aria-label="Previous videos"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => scroll('right')}
-              disabled={!canScrollRight}
-              className="w-11 h-11 rounded-full bg-white border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-50 hover:border-purple-200 hover:text-[#6842C2] flex items-center justify-center transition-all shadow-xs cursor-pointer"
-              aria-label="Next videos"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
@@ -214,11 +271,14 @@ export const VideosSection: React.FC<VideosSectionProps> = ({ onOpenEnquiry }) =
                       }`}
                       onClick={() => setActiveModalVideo(video)}
                     >
-                      {/* Thumbnail Image */}
-                      <img
-                        src={video.poster}
-                        alt={video.title}
-                        className={`w-full h-full object-cover transition-transform duration-500 ${
+                      {/* Video Preview Frame */}
+                      <video
+                        src={`${video.videoUrl}#t=${video.previewTime ?? 1}`}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        aria-label={video.title}
+                        className={`w-full h-full object-cover pointer-events-none transition-transform duration-500 ${
                           isActive ? 'scale-105' : ''
                         }`}
                       />
@@ -312,66 +372,97 @@ export const VideosSection: React.FC<VideosSectionProps> = ({ onOpenEnquiry }) =
         {/* ======================================================== */}
         {/* DESKTOP 9:16 VIDEO CARDS CAROUSEL                        */}
         {/* ======================================================== */}
-        <div 
-          ref={scrollRef}
-          onScroll={checkScrollState}
-          className="hidden md:flex gap-5 sm:gap-6 overflow-x-auto pb-6 scroll-smooth scrollbar-none snap-x snap-mandatory"
+        <div
+          className="hidden md:block relative md:px-6 lg:px-7 group/carousel"
+          onMouseEnter={() => setIsDesktopPaused(true)}
+          onMouseLeave={() => setIsDesktopPaused(false)}
         >
-          {videoList.map((video) => (
-            <div
-              key={video.id}
-              className="group relative shrink-0 w-[270px] sm:w-[290px] aspect-[9/16] rounded-3xl overflow-hidden bg-slate-900 shadow-xl border border-slate-800 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] snap-start cursor-pointer"
-              onClick={() => setActiveModalVideo(video)}
+          {/* Left Arrow Button */}
+          {hasOverflow && (
+            <button
+              onClick={() => scroll('left')}
+              aria-label="Previous videos"
+              className="absolute left-0 lg:left-1 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_8px_20px_rgba(0,0,0,0.14)] flex items-center justify-center text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-[#6842C2] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              {/* Thumbnail Image */}
-              <img
-                src={video.poster}
-                alt={video.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2]" />
+            </button>
+          )}
 
-              {/* Top Glass Tag */}
-              <div className="absolute top-3.5 inset-x-3.5 z-20 flex items-center justify-between pointer-events-none">
-                <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-mono font-bold text-white border border-white/20">
-                  {video.category}
-                </span>
+          {/* Right Arrow Button */}
+          {hasOverflow && (
+            <button
+              onClick={() => scroll('right')}
+              aria-label="Next videos"
+              className="absolute right-0 lg:right-1 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-[0_8px_20px_rgba(0,0,0,0.14)] flex items-center justify-center text-slate-700 hover:bg-purple-50 hover:border-purple-200 hover:text-[#6842C2] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2]" />
+            </button>
+          )}
 
-                <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-mono font-bold text-white/90 border border-white/20">
-                  {video.duration}
-                </span>
-              </div>
+          <div 
+            ref={scrollRef}
+            onScroll={checkScrollState}
+            className="flex gap-5 lg:gap-6 overflow-x-auto pt-3 pb-6 scroll-smooth no-scrollbar snap-x snap-proximity"
+          >
+            {videoList.map((video) => (
+              <div
+                key={video.id}
+                className="group relative shrink-0 md:w-[calc((100%-40px)/3)] lg:w-[calc((100%-48px)/3)] xl:w-[calc((100%-72px)/4)] aspect-[9/16] rounded-3xl overflow-hidden bg-slate-900 shadow-xl border border-slate-800 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 snap-start cursor-pointer"
+                onClick={() => setActiveModalVideo(video)}
+              >
+                {/* Video Preview Frame */}
+                <video
+                  src={`${video.videoUrl}#t=${video.previewTime ?? 1}`}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  aria-label={video.title}
+                  className="w-full h-full object-cover pointer-events-none transition-transform duration-500 group-hover:scale-105"
+                />
 
-              {/* Center Play Button Overlay (Click opens pop-up) */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition-all z-10">
-                <div className="w-16 h-16 rounded-full bg-white/95 group-hover:bg-white text-[#6842C2] shadow-2xl flex items-center justify-center transition-all transform group-hover:scale-110 shadow-purple-900/40">
-                  <Play className="w-7 h-7 fill-current translate-x-0.5" />
-                </div>
-              </div>
+                {/* Top Glass Tag */}
+                <div className="absolute top-3.5 inset-x-3.5 z-20 flex items-center justify-between pointer-events-none">
+                  <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-mono font-bold text-white border border-white/20">
+                    {video.category}
+                  </span>
 
-              {/* Bottom Scrim with Video Details */}
-              <div className="absolute inset-x-0 bottom-0 z-20 p-4 sm:p-5 bg-gradient-to-t from-black via-black/75 to-transparent flex flex-col justify-end text-left pointer-events-none">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[10px] font-mono text-white/70">
-                    {video.views} views
+                  <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-mono font-bold text-white/90 border border-white/20">
+                    {video.duration}
                   </span>
                 </div>
 
-                <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 drop-shadow-sm mb-2 group-hover:text-purple-200 transition-colors">
-                  {video.title}
-                </h3>
-
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {video.tags.slice(0, 2).map((t, idx) => (
-                    <span key={idx} className="text-[9px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/15 text-white/90 backdrop-blur-xs">
-                      #{t.replace(/\s+/g, '')}
-                    </span>
-                  ))}
+                {/* Center Play Button Overlay (Click opens pop-up) */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition-all z-10">
+                  <div className="w-16 h-16 rounded-full bg-white/95 group-hover:bg-white text-[#6842C2] shadow-2xl flex items-center justify-center transition-all transform group-hover:scale-110 shadow-purple-900/40">
+                    <Play className="w-7 h-7 fill-current translate-x-0.5" />
+                  </div>
                 </div>
-              </div>
 
-            </div>
-          ))}
+                {/* Bottom Scrim with Video Details */}
+                <div className="absolute inset-x-0 bottom-0 z-20 p-4 sm:p-5 bg-gradient-to-t from-black via-black/75 to-transparent flex flex-col justify-end text-left pointer-events-none">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[10px] font-mono text-white/70">
+                      {video.views} views
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 drop-shadow-sm mb-2 group-hover:text-purple-200 transition-colors">
+                    {video.title}
+                  </h3>
+
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {video.tags.slice(0, 2).map((t, idx) => (
+                      <span key={idx} className="text-[9px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/15 text-white/90 backdrop-blur-xs">
+                        #{t.replace(/\s+/g, '')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Bottom Banner with Action */}
@@ -417,38 +508,40 @@ export const VideosSection: React.FC<VideosSectionProps> = ({ onOpenEnquiry }) =
         >
           {/* Modal Container */}
           <div 
-            className="relative w-full max-w-sm sm:max-w-md aspect-[9/16] max-h-[92vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col my-auto overscroll-contain"
+            className="relative w-full max-w-sm sm:max-w-md h-[90vh] max-h-[820px] bg-slate-950 rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col my-auto overscroll-contain"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               onClick={() => setActiveModalVideo(null)}
-              className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center transition-colors cursor-pointer border border-white/20 shadow-md"
+              className="absolute top-3.5 right-3.5 z-30 w-9 h-9 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center transition-colors cursor-pointer border border-white/20 shadow-md"
               aria-label="Close video player"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* Video Player (Plays only here in the pop-up!) */}
-            <video
-              src={activeModalVideo.videoUrl}
-              poster={activeModalVideo.poster}
-              autoPlay
-              controls
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-            />
+            <div className="relative flex-1 min-h-0 bg-black flex items-center justify-center">
+              <video
+                key={activeModalVideo.id}
+                src={activeModalVideo.videoUrl}
+                autoPlay
+                controls
+                loop
+                playsInline
+                className="w-full h-full object-contain"
+              />
+            </div>
 
-            {/* Scrim Overlay at Bottom with CTA */}
-            <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black via-black/80 to-transparent z-20 pointer-events-auto">
+            {/* Bottom Info & CTA Footer (Non-overlapping with video controls) */}
+            <div className="shrink-0 p-4 sm:p-5 bg-slate-950 border-t border-white/10 z-20">
               <span className="px-2.5 py-0.5 rounded-full bg-purple-500/80 text-[10px] font-mono font-bold text-white uppercase inline-block mb-1.5">
                 {activeModalVideo.category}
               </span>
-              <h3 className="text-base font-bold text-white mb-1.5 leading-snug">
+              <h3 className="text-sm sm:text-base font-bold text-white mb-1 leading-snug">
                 {activeModalVideo.title}
               </h3>
-              <p className="text-xs text-white/80 line-clamp-2 mb-3 leading-relaxed">
+              <p className="text-xs text-white/75 line-clamp-2 mb-3 leading-relaxed">
                 {activeModalVideo.description}
               </p>
 
